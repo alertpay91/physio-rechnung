@@ -1,0 +1,5 @@
+node_modules/
+*.physio.json
+*UNVERSCHLUESSELT*.json
+.DS_Store
+Thumbs.db

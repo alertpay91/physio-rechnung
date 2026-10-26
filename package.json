@@ -1,0 +1,12 @@
+{
+  "name": "physio-rechnung",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Rechnungsprogramm für eine Physiotherapie-Praxis (statische Web-App, verschlüsselte Daten).",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "start": "node tools/serve.mjs"
+  },
+  "license": "UNLICENSED"
+}
