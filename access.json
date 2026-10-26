@@ -1,0 +1,12 @@
+{
+ "format": "physio-vault",
+ "v": 1,
+ "kdf": {
+  "name": "PBKDF2-SHA256",
+  "iter": 1000000,
+  "salt": "kn9i10PHSlPbG2lv6LEtmw=="
+ },
+ "iv": "nzgkEzZP6nXvFXr7",
+ "data": "GBH+HZkT2JNfsdHoJTbcwH8C8tEWUMJfDeecZ2AEBvf5D6hfa3vl1RBMac1RoJDSAqLIptbQ+WU35cnSBVC5kpq7JdDvVGjqwjRVHqgePCPiozPAhloau8yWmP/MM+cBkeKimDXp5xMAV/dP9S8qbBkrQXRhmMLgCWxbYg230BIqanPEO5x0d36kh1vEdovl8i4nvdZx00BF3dlvkBz+kQJmfXHDEKBJNQB3NE/dlbiC/gM5W69jq65IsBSqJymc8CUw3+YuZiD0akgqHZso6g3kCLsqPdeMHrI/oZd52Gc2WB2KdDWzny+eyGOm+vZG0rYbN7ZKzpyg5/pqkmKmhKNgZ7PC7kO6fn0=",
+ "at": "2026-10-26T19:14:16.303Z"
+}
