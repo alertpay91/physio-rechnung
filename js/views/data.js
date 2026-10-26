@@ -5,7 +5,7 @@ import * as M from '../model.js';
 import { t, locale } from '../i18n.js';
 import { $, on, toast, dialog, confirmBox, busy, download, readFile, icon } from '../ui.js';
 import { esc, todayISO } from '../util.js';
-import { passwordProblems, WrongPassword } from '../crypto.js';
+import { passwordProblems, passwordBlocked, WrongPassword } from '../crypto.js';
 import { showErr } from './invoices.js';
 import { go } from '../app.js';
 
@@ -206,8 +206,8 @@ async function changePw() {
   if (!r) return;
   const [o, n1, n2] = r;
   if (n1 !== n2) { toast(t('pw_mismatch'), 'error'); return; }
-  const probs = passwordProblems(n1);
-  if (probs.length) { toast(probs.map((p) => t(p)).join(' '), 'error'); return; }
+  if (passwordBlocked(n1)) { toast(t('pw_weak') + ' ' + t('pw_min8'), 'error'); return; }
+  if (passwordProblems(n1).length && !(await confirmBox(t('pw_weak_confirm')))) return;
   try {
     await busy(t('pw_changing'), () => V.changePassword(o, n1));
     toast(t('pw_changed'));

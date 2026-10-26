@@ -127,7 +127,7 @@ const DE = {
   retention_hint: 'Rechnungen mindestens 10 Jahre aufbewahren (§ 147 AO / § 14b UStG; Behandlungsunterlagen § 630f BGB). Bitte nichts vorzeitig löschen.',
   new_pw: 'Neues Passwort', new_pw2: 'Passwort wiederholen', pw_rules: 'Mindestens 12 Zeichen. Am besten ein Satz aus mehreren Wörtern, z. B. „Blauer-Hund-tanzt-1987“.',
   pw_mismatch: 'Die Passwörter stimmen nicht überein.', pw_short: 'Zu kurz (mind. 12 Zeichen).', pw_simple: 'Zu einfach (Groß-/Kleinbuchstaben, Zahlen, Zeichen mischen oder länger machen).',
-  pw_common: 'Zu leicht zu erraten.', pw_good: 'Gutes Passwort', pw_weak: 'Das Passwort ist zu schwach.',
+  pw_common: 'Zu leicht zu erraten.', pw_good: 'Gutes Passwort', pw_weak: 'Das Passwort ist zu schwach.', pw_weak_confirm: 'Dieses Passwort ist eher schwach. Ein längeres Passwort schützt die Daten besser (später änderbar unter „Daten“). Trotzdem verwenden?', pw_min8: 'Mindestens 8 Zeichen, nicht leicht zu erraten.',
   pw_change_info: 'Andere Geräte müssen sich danach mit dem neuen Passwort anmelden.', pw_changing: 'Passwort wird geändert …', pw_changed: 'Passwort geändert',
 
   login_title: 'Anmelden', password: 'Passwort', remember: 'Auf diesem Gerät angemeldet bleiben (30 Tage)',
@@ -284,7 +284,7 @@ const SR = {
   retention_hint: 'Račune čuvati najmanje 10 godina (§ 147 AO / § 14b UStG; dokumentacija tretmana § 630f BGB). Ništa ne brisati pre roka.',
   new_pw: 'Nova šifra', new_pw2: 'Ponovi šifru', pw_rules: 'Najmanje 12 znakova. Najbolje rečenica od više reči, npr. „Plavi-Pas-Igra-1987“.',
   pw_mismatch: 'Šifre se ne poklapaju.', pw_short: 'Prekratka (najmanje 12 znakova).', pw_simple: 'Previše jednostavna (kombinuj velika/mala slova, brojeve, znakove ili je produži).',
-  pw_common: 'Previše laka za pogađanje.', pw_good: 'Dobra šifra', pw_weak: 'Šifra je preslaba.',
+  pw_common: 'Previše laka za pogađanje.', pw_good: 'Dobra šifra', pw_weak: 'Šifra je preslaba.', pw_weak_confirm: 'Ova šifra je prilično slaba. Duža šifra bolje štiti podatke (može se promeniti kasnije u „Podaci“). Ipak koristiti?', pw_min8: 'Najmanje 8 znakova, da nije laka za pogađanje.',
   pw_change_info: 'Drugi uređaji će posle toga morati da se prijave novom šifrom.', pw_changing: 'Menja se šifra …', pw_changed: 'Šifra promenjena',
 
   login_title: 'Prijava', password: 'Šifra', remember: 'Ostani prijavljen na ovom uređaju (30 dana)',

@@ -4,7 +4,7 @@ import * as V from '../vault.js';
 import { t, getLang, setLang } from '../i18n.js';
 import { $, on, toast, busy, confirmBox, icon } from '../ui.js';
 import { esc } from '../util.js';
-import { passwordProblems, WrongPassword } from '../crypto.js';
+import { passwordProblems, passwordBlocked, WrongPassword } from '../crypto.js';
 import { defaultDataRepo, showSetupErr } from './data.js';
 
 const langSwitch = () => `<div class="lang">${['de', 'sr'].map((l) => `<button type="button" data-lang="${l}" class="${getLang() === l ? 'on' : ''}">${l.toUpperCase()}</button>`).join('')}</div>`;
@@ -80,7 +80,8 @@ function setup(root, done) {
     e.preventDefault();
     const pw = $('#p1', root).value;
     if (pw !== $('#p2', root).value) { toast(t('pw_mismatch'), 'error'); return; }
-    if (passwordProblems(pw).length) { toast(t('pw_weak'), 'error'); return; }
+    if (passwordBlocked(pw)) { toast(t('pw_weak') + ' ' + t('pw_min8'), 'error'); return; }
+    if (passwordProblems(pw).length && !(await confirmBox(t('pw_weak_confirm')))) return;
     const mode = $('input[name=m]:checked', root).value;
     try {
       if (mode === 'cloud') {

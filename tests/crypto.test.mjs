@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { deriveKey, encryptJSON, decryptJSON, decryptWithPassword, newSalt, WrongPassword, passwordProblems } from '../js/crypto.js';
+import { deriveKey, encryptJSON, decryptJSON, decryptWithPassword, newSalt, WrongPassword, passwordProblems, passwordBlocked } from '../js/crypto.js';
 import { makeZip, crc32 } from '../js/zip.js';
 
 const ITER = 1000; // brže u testovima
@@ -30,6 +30,9 @@ test('jačina šifre', () => {
   assert.ok(passwordProblems('kurz').includes('pw_short'));
   assert.deepEqual(passwordProblems('Sonnenblume-Lindenweg-77'), []);
   assert.ok(passwordProblems('password12345').includes('pw_common'));
+  assert.equal(passwordBlocked('Terapeut84'), false);
+  assert.equal(passwordBlocked('kurz12'), true);
+  assert.equal(passwordBlocked('password12345'), true);
 });
 
 test('zip', () => {

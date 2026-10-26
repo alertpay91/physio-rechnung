@@ -81,3 +81,8 @@ export function passwordProblems(pw) {
   if (/^(.)\1+$/.test(pw || '') || /(passwort|password|physio|123456|qwertz|qwerty)/i.test(pw || '')) p.push('pw_common');
   return p;
 }
+
+// Šifra koja se ne sme koristiti; ostale slabosti su samo upozorenje (korisnik može da potvrdi)
+export function passwordBlocked(pw) {
+  return (pw || '').length < 8 || passwordProblems(pw).includes('pw_common');
+}
