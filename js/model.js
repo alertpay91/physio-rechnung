@@ -33,6 +33,43 @@ const SERVICE_SEED = [
   ['WP', 'Wärmepackung', 0, null],
 ];
 
+// Brzi izbor: dijagnoze i lekari koji se biraju klikom (lista se menja u Podešavanjima i sama dopunjuje)
+export const DIAG_SEED = [
+  'M54.4 Lumboischialgie',
+  'M54.2 Zervikalneuralgie',
+  'M51.2 Bandscheibenverlagerung',
+  'M17.1 Primäre Gonarthrose',
+  'M16.1 Primäre Koxarthrose',
+  'M75.1 Läsion der Rotatorenmanschette',
+  'Z96.6 Z. n. Gelenkendoprothese',
+  'I69.3 Folgen eines Hirninfarktes',
+  'R26.8 Gangstörung / eingeschränkte Mobilität',
+];
+export const PICK_KINDS = ['diagnoses', 'doctors'];
+
+// Više dijagnoza u jednom polju razdvojeno je sa "; "
+export const splitPicks = (s) => String(s || '').split(/\s*;\s*/).map(norm).filter(Boolean);
+
+export function togglePick(text, item) {
+  const parts = splitPicks(text);
+  const i = parts.findIndex((x) => x.toLowerCase() === item.toLowerCase());
+  if (i >= 0) parts.splice(i, 1); else parts.push(item);
+  return parts.join('; ');
+}
+
+export const hasPick = (text, item) => splitPicks(text).some((x) => x.toLowerCase() === item.toLowerCase());
+
+// Upisuje nove vrednosti u listu brzog izbora (bez duplikata); vraća true ako je nešto dodato
+export function learnPicks(db, kind, text) {
+  const list = db.praxis[kind] || (db.praxis[kind] = []);
+  let added = false;
+  for (const v of kind === 'diagnoses' ? splitPicks(text) : [norm(text)].filter(Boolean)) {
+    if (!list.some((x) => x.toLowerCase() === v.toLowerCase())) { list.push(v); added = true; }
+  }
+  if (added) touch(db.praxis);
+  return added;
+}
+
 export const INSURANCE = ['selbstzahler', 'pkv', 'beihilfe', 'gkv'];
 export const STATUSES = ['draft', 'final', 'sent', 'paid', 'cancelled', 'storno'];
 export const OPEN = ['final', 'sent'];
@@ -43,7 +80,7 @@ export function newDB() {
   const t = nowStamp();
   return {
     schema: SCHEMA,
-    praxis: { ...DEFAULT_PRAXIS, updatedAt: t },
+    praxis: { ...DEFAULT_PRAXIS, diagnoses: [...DIAG_SEED], doctors: [], updatedAt: t },
     services: SERVICE_SEED.map(([code, name, priceCents, minutes], i) => ({
       id: uid(), code, name, priceCents, minutes, ziffer: '', active: true, sort: i,
       createdAt: t, updatedAt: t,
@@ -61,6 +98,8 @@ export function migrate(db) {
   db.schema = db.schema || SCHEMA;
   if (db.schema > SCHEMA) throw new Error('Daten stammen aus einer neueren Programmversion. Bitte Seite neu laden.');
   db.praxis = { ...DEFAULT_PRAXIS, ...(db.praxis || {}) };
+  if (!Array.isArray(db.praxis.diagnoses)) db.praxis.diagnoses = [...DIAG_SEED];
+  if (!Array.isArray(db.praxis.doctors)) db.praxis.doctors = [];
   for (const c of COLLECTIONS) db[c] = Array.isArray(db[c]) ? db[c] : [];
   db.tombstones = db.tombstones || {};
   db.meta = db.meta || {};
@@ -280,10 +319,16 @@ export function introFor(praxis, inv) {
     : praxis.introNoPresc;
 }
 
+// Podaci prakse koji se zamrzavaju u računu (bez lista za brzi izbor)
+export function praxisSnapshot(praxis) {
+  const pr = { ...praxis };
+  delete pr.updatedAt; delete pr.diagnoses; delete pr.doctors;
+  return pr;
+}
+
 export function buildSnapshot(db, inv) {
   const p = db.patients.find((x) => x.id === inv.patientId);
-  const pr = { ...db.praxis };
-  delete pr.updatedAt;
+  const pr = praxisSnapshot(db.praxis);
   const dates = [...inv.dates].sort();
   return {
     kind: inv.kind,
@@ -359,7 +404,7 @@ export function createStorno(db, inv, date = todayISO()) {
     reminders: [], createdAt: nowStamp(), finalizedAt: nowStamp(), updatedAt: nowStamp(),
   };
   s.snapshot = buildSnapshot(db, s);
-  s.snapshot.praxis = { ...db.praxis }; delete s.snapshot.praxis.updatedAt;
+  s.snapshot.praxis = praxisSnapshot(db.praxis);
   s.snapshot.datesText = snap.datesText;
   s.snapshot.cancelledTotalCents = snap.totalCents;
   db.invoices.push(s);

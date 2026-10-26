@@ -172,6 +172,15 @@ a.stat:hover { border-color: var(--accent); }
 .sw.before { background: var(--bg); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 .chip { font-size: 12.5px; padding: 3px 10px; border-radius: 14px; background: var(--soft); border: 0; cursor: pointer; color: var(--ink); }
+.chip.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.chips.pick { margin: 6px 0 12px; }
+.chips.pick .chip { font-size: 14px; padding: 7px 12px; border-radius: 18px; border: 1px solid var(--line); }
+.chips.pick .chip.on { border-color: var(--accent); }
+.chip-link { align-self: center; display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px; }
+.chip-link svg { width: 14px; height: 14px; }
+.pickrow { margin-bottom: 6px; align-items: center; flex-wrap: nowrap !important; }
+.pickrow input { flex: 1 1 auto !important; min-width: 0; }
+.pickrow .btn { flex: none !important; }
 label.chip { display: inline-flex; align-items: center; gap: 5px; margin: 0; }
 label.chip input { margin: 0; width: 15px; height: 15px; }
 

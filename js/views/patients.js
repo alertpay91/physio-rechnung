@@ -56,6 +56,8 @@ export function patientForm(view, id) {
   setGuard(() => stableStringify(p) !== original);
 
   const services = db.services.filter((s) => s.active);
+  const diags = db.praxis.diagnoses || [];
+  const docs = db.praxis.doctors || [];
   const f = (k, label, type = 'text', extra = '') => `<label class="field ${extra}"><span>${label}</span><input type="${type}" data-f="${k}" value="${esc(p[k] || '')}" ${type === 'tel' ? 'inputmode="tel"' : ''}></label>`;
   const b = (k, label, extra = '') => `<label class="field ${extra}"><span>${label}</span><input type="text" data-b="${k}" value="${esc(p.billTo[k] || '')}"></label>`;
 
@@ -67,7 +69,9 @@ export function patientForm(view, id) {
         <label class="field grow"><span>${t('doctor')}</span><input type="text" data-r="doctor" value="${esc(r.doctor || '')}"></label>
         <label class="field narrow"><span>${t('sess_total')}</span><input type="number" min="0" inputmode="numeric" data-r="sessions" value="${r.sessions || ''}"></label>
       </div>
-      <label class="field"><span>${t('diag_icd')}</span><input type="text" data-r="diagnosis" value="${esc(r.diagnosis || '')}"></label>
+      ${docs.length ? `<div class="chips pick">${docs.map((d, j) => `<button type="button" class="chip ${r.doctor === d ? 'on' : ''}" data-pdoc="${j}">${esc(d)}</button>`).join('')}</div>` : ''}
+      <label class="field"><span>${t('diag_icd')} <small class="muted">${t('pick_hint')}</small></span><input type="text" data-r="diagnosis" value="${esc(r.diagnosis || '')}" placeholder="${t('diag_ph')}"></label>
+      <div class="chips pick">${diags.map((d, j) => `<button type="button" class="chip ${M.hasPick(r.diagnosis, d) ? 'on' : ''}" data-pdg="${j}">${esc(d)}</button>`).join('')}<a class="chip-link small" href="#/einstellungen/auswahl">${icon('settings')} ${t('edit_picks')}</a></div>
       <div class="small muted">${t('rx_services')}</div>
       <div class="chips">${services.map((s) => `<label class="chip check"><input type="checkbox" data-rs="${esc(s.code)}" ${M.rxServices(p, r).includes(s.code) ? 'checked' : ''}> ${esc(s.code)}</label>`).join('')}</div>
       <div class="row keep between"><span class="small muted">${r.sessions ? t('used', { u: u.billed, t: r.sessions }) : ''}${u.drafted ? ' · ' + t('in_drafts', { n: u.drafted }) : ''}</span>
@@ -130,6 +134,16 @@ export function patientForm(view, id) {
       r[el.dataset.r] = el.dataset.r === 'sessions' ? (Number(el.value) || 0) : el.value;
       r.updatedAt = nowStamp();
     });
+    on(view, '[data-pdoc]', 'click', (e, el) => {
+      const r = p.prescriptions[+el.closest('.rx').dataset.i];
+      r.doctor = r.doctor === docs[+el.dataset.pdoc] ? '' : docs[+el.dataset.pdoc];
+      r.updatedAt = nowStamp(); render();
+    });
+    on(view, '[data-pdg]', 'click', (e, el) => {
+      const r = p.prescriptions[+el.closest('.rx').dataset.i];
+      r.diagnosis = M.togglePick(r.diagnosis, diags[+el.dataset.pdg]);
+      r.updatedAt = nowStamp(); render();
+    });
     on(view, '[data-rs]', 'change', (e, el) => {
       const r = p.prescriptions[+el.closest('.rx').dataset.i];
       const set = new Set(M.rxServices(p, r));
@@ -157,6 +171,7 @@ export function patientForm(view, id) {
         await V.commit((d) => {
           const i = d.patients.findIndex((x) => x.id === p.id);
           if (i >= 0) d.patients[i] = clone(p); else d.patients.push(clone(p));
+          for (const r of p.prescriptions) { M.learnPicks(d, 'doctors', r.doctor); M.learnPicks(d, 'diagnoses', r.diagnosis); }
         });
         setGuard(null);
         toast(t('saved'));

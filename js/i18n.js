@@ -49,7 +49,7 @@ const DE = {
 
   first_patient: 'Bitte zuerst einen Patienten anlegen.', edit_draft: 'Entwurf bearbeiten', correction_of: 'Korrektur zu Rechnung {n}',
   patient_presc: 'Patient und Verordnung', patient: 'Patient', prescription: 'Verordnung', no_presc_sel: '(ohne / Datum manuell)',
-  inv_no: 'Rechnungsnummer', auto_ph: 'automatisch: {n}', diag_label: 'Diagnose auf der Rechnung angeben (für PKV / Beihilfe)', diag_ph: 'z. B. M54.5 Lumbalgie',
+  inv_no: 'Rechnungsnummer', auto_ph: 'automatisch: {n}', diag_label: 'Diagnose auf der Rechnung angeben (für PKV / Beihilfe)', diag_ph: 'z. B. M54.4 Lumboischialgie', pick_hint: '(antippen oder tippen)', pick_svc: 'Was wurde gemacht? Leistung antippen zum Hinzufügen/Entfernen:', edit_picks: 'Liste bearbeiten', picks_title: 'Schnellauswahl', picks_sub: 'Diese Diagnosen und Ärzte erscheinen als Knöpfe beim Anlegen von Rechnungen und Verordnungen. Neu eingetippte Einträge werden automatisch ergänzt.', picks_diagnoses: 'Diagnosen', picks_doctors: 'Ärzte', picks_empty: 'Noch keine Einträge.', picks_dup: 'Eintrag ist schon in der Liste.', doctor_ph: 'z. B. Dr. med. Müller',
   edit_patient: 'Patientendaten bearbeiten', dates_title: 'Behandlungsdaten', appts: '{n} Termine',
   dates_hint: 'Behandlungstage antippen. Bereits abgerechnete Tage sind gesperrt. Die Anzahl der Positionen folgt automatisch.',
   billed_in: 'Bereits abgerechnet in Rechnung {n}', prev_month: 'Vorheriger Monat', next_month: 'Nächster Monat',
@@ -206,7 +206,7 @@ const SR = {
 
   first_patient: 'Prvo dodaj pacijenta.', edit_draft: 'Izmena nacrta', correction_of: 'Ispravka računa {n}',
   patient_presc: 'Pacijent i Verordnung', patient: 'Pacijent', prescription: 'Verordnung', no_presc_sel: '(bez / datum ručno)',
-  inv_no: 'Broj računa', auto_ph: 'automatski: {n}', diag_label: 'Navedi dijagnozu na računu (za PKV / Beihilfe)', diag_ph: 'npr. M54.5 Lumbalgie',
+  inv_no: 'Broj računa', auto_ph: 'automatski: {n}', diag_label: 'Navedi dijagnozu na računu (za PKV / Beihilfe)', diag_ph: 'npr. M54.4 Lumboischialgie', pick_hint: '(klikni ili ukucaj)', pick_svc: 'Šta je rađeno? Klikni uslugu da je dodaš/ukloniš:', edit_picks: 'Uredi listu', picks_title: 'Brzi izbor', picks_sub: 'Ove dijagnoze i lekari se pojavljuju kao dugmići pri pravljenju računa i Verordnung-a. Novo ukucane stavke se automatski dodaju.', picks_diagnoses: 'Dijagnoze', picks_doctors: 'Lekari', picks_empty: 'Još nema stavki.', picks_dup: 'Stavka je već na listi.', doctor_ph: 'npr. Dr. med. Müller',
   edit_patient: 'Izmeni podatke pacijenta', dates_title: 'Termini tretmana', appts: '{n} termina',
   dates_hint: 'Tapni na dane tretmana. Već fakturisani dani su zaključani. Količina u stavkama se sama popunjava.',
   billed_in: 'Već fakturisano u računu {n}', prev_month: 'Prethodni mesec', next_month: 'Sledeći mesec',

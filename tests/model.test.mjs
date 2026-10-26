@@ -164,3 +164,26 @@ test('CSV: tačka-zarez, BOM, zaštita od formula', () => {
   assert.match(csv, /"57,30"/);
   assert.match(csv, /"'=HYPERLINK\(\) Beispiel"/);
 });
+
+test('brzi izbor: dijagnoze i lekari', () => {
+  const db = M.newDB();
+  assert.ok(db.praxis.diagnoses.length > 5);
+  assert.deepEqual(db.praxis.doctors, []);
+  let d = M.togglePick('', 'M54.4 Lumboischialgie');
+  d = M.togglePick(d, 'M17.1 Primäre Gonarthrose');
+  assert.equal(d, 'M54.4 Lumboischialgie; M17.1 Primäre Gonarthrose');
+  assert.ok(M.hasPick(d, 'm17.1 primäre gonarthrose'));
+  assert.equal(M.togglePick(d, 'M54.4 Lumboischialgie'), 'M17.1 Primäre Gonarthrose');
+  const n = db.praxis.diagnoses.length;
+  assert.equal(M.learnPicks(db, 'diagnoses', 'M54.4 Lumboischialgie; Neu: Tennisarm'), true);
+  assert.equal(db.praxis.diagnoses.length, n + 1);
+  assert.equal(M.learnPicks(db, 'diagnoses', 'neu: tennisarm'), false);
+  M.learnPicks(db, 'doctors', '  Dr. Müller ');
+  assert.deepEqual(db.praxis.doctors, ['Dr. Müller']);
+  // stari podaci bez lista dobijaju podrazumevane, a liste ne ulaze u zamrznuti račun
+  const old = M.migrate({ praxis: { name: 'X' } });
+  assert.ok(old.praxis.diagnoses.length > 5);
+  assert.equal(M.praxisSnapshot(db.praxis).diagnoses, undefined);
+  old.praxis.diagnoses.push('Y');
+  assert.ok(!M.DIAG_SEED.includes('Y'));
+});

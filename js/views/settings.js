@@ -10,11 +10,49 @@ import { pdfActions, showErr } from './invoices.js';
 import { invoiceDoc } from '../pdf.js';
 
 export function settings(view, tab) {
-  tab = tab === 'leistungen' ? 'leistungen' : 'praxis';
+  tab = ['leistungen', 'auswahl'].includes(tab) ? tab : 'praxis';
   view.innerHTML = `<h1>${t('nav_settings')}</h1>
-    <div class="tabs" role="tablist"><a role="tab" href="#/einstellungen" class="${tab === 'praxis' ? 'on' : ''}">${t('praxis_title')}</a><a role="tab" href="#/einstellungen/leistungen" class="${tab === 'leistungen' ? 'on' : ''}">${t('svc_title')}</a></div>
+    <div class="tabs" role="tablist"><a role="tab" href="#/einstellungen" class="${tab === 'praxis' ? 'on' : ''}">${t('praxis_title')}</a><a role="tab" href="#/einstellungen/leistungen" class="${tab === 'leistungen' ? 'on' : ''}">${t('svc_title')}</a><a role="tab" href="#/einstellungen/auswahl" class="${tab === 'auswahl' ? 'on' : ''}">${t('picks_title')}</a></div>
     <div id="tab"></div>`;
-  if (tab === 'praxis') praxis($('#tab', view)); else servicesTab($('#tab', view));
+  ({ praxis, leistungen: servicesTab, auswahl: picksTab })[tab]($('#tab', view));
+}
+
+// Brzi izbor: liste dijagnoza i lekara (jedna stavka po redu); redosled je redosled dugmića
+function picksTab(el) {
+  const pr = V.db().praxis;
+  const lists = { diagnoses: [...(pr.diagnoses || [])], doctors: [...(pr.doctors || [])] };
+  const orig = stableStringify(lists);
+  setGuard(() => stableStringify(lists) !== orig);
+  const block = (k) => `<div class="card"><h2>${t(k === 'diagnoses' ? 'picks_diagnoses' : 'picks_doctors')}</h2>
+      <div class="picklist">${lists[k].map((v, i) => `<div class="row keep pickrow" data-k="${k}" data-i="${i}">
+        <input type="text" value="${esc(v)}" aria-label="${t(k === 'diagnoses' ? 'picks_diagnoses' : 'picks_doctors')} ${i + 1}">
+        <button type="button" class="btn sm icon-only" data-up aria-label="↑" ${i ? '' : 'disabled'}>↑</button>
+        <button type="button" class="btn sm icon-only" data-del aria-label="${t('delete')}">${icon('trash')}</button></div>`).join('') || `<p class="small muted">${t('picks_empty')}</p>`}</div>
+      <div class="row keep"><input type="text" data-new="${k}" placeholder="${t(k === 'diagnoses' ? 'diag_ph' : 'doctor_ph')}"><button type="button" class="btn" data-add="${k}">${icon('plus')} ${t('add_item')}</button></div>
+    </div>`;
+  const render = () => {
+    el.innerHTML = `<p class="muted">${t('picks_sub')}</p>${block('diagnoses')}${block('doctors')}
+      <div class="actions sticky-actions"><button type="button" class="btn primary" id="save">${t('save')}</button></div>`;
+    on(el, '.pickrow input', 'change', (e, inp) => { const r = inp.closest('.pickrow'); lists[r.dataset.k][+r.dataset.i] = norm(inp.value); });
+    on(el, '.pickrow [data-del]', 'click', (e, b) => { const r = b.closest('.pickrow'); lists[r.dataset.k].splice(+r.dataset.i, 1); render(); });
+    on(el, '.pickrow [data-up]', 'click', (e, b) => { const r = b.closest('.pickrow'), l = lists[r.dataset.k], i = +r.dataset.i; [l[i - 1], l[i]] = [l[i], l[i - 1]]; render(); });
+    const add = (k) => {
+      const inp = $(`[data-new="${k}"]`, el), v = norm(inp.value);
+      if (!v) { inp.focus(); return; }
+      if (lists[k].some((x) => x.toLowerCase() === v.toLowerCase())) { toast(t('picks_dup'), 'error'); return; }
+      lists[k].push(v); render(); $(`[data-new="${k}"]`, el).focus();
+    };
+    on(el, '[data-add]', 'click', (e, b) => add(b.dataset.add));
+    on(el, '[data-new]', 'keydown', (e, inp) => { if (e.key === 'Enter') { e.preventDefault(); add(inp.dataset.new); } });
+    $('#save', el).onclick = async () => {
+      for (const k of M.PICK_KINDS) lists[k] = [...new Map(lists[k].map(norm).filter(Boolean).map((v) => [v.toLowerCase(), v])).values()];
+      await V.commit((d) => { for (const k of M.PICK_KINDS) d.praxis[k] = [...lists[k]]; M.touch(d.praxis); });
+      setGuard(null);
+      toast(t('saved'));
+      go('#/einstellungen/auswahl', true);
+    };
+  };
+  render();
 }
 
 function praxis(el) {
@@ -70,7 +108,7 @@ function praxis(el) {
     pr.paymentDays = Math.max(0, Math.round(Number(pr.paymentDays) || 14));
     pr.reminderDays = Math.max(1, Math.round(Number(pr.reminderDays) || 10));
     pr.updatedAt = nowStamp();
-    await V.commit((d) => { d.praxis = clone(pr); });
+    await V.commit((d) => { d.praxis = { ...clone(pr), diagnoses: d.praxis.diagnoses, doctors: d.praxis.doctors }; });
     setGuard(null);
     toast(t('saved'));
     go('#/einstellungen', true);

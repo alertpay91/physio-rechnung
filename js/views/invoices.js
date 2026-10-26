@@ -317,14 +317,15 @@ export function invoiceForm(view, id, query) {
           <label class="field"><span>${t('inv_date')}</span><input type="date" id="idate" value="${draft.invoiceDate}"></label>
           <label class="field"><span>${t('inv_no')}</span><input type="text" id="inum" value="${esc(draft.number || '')}" placeholder="${t('auto_ph', { n: M.nextNumber(db, draft.invoiceDate || todayISO()) })}"></label>
         </div>
+        <label class="field"><span>${t('diagnosis')} <small class="muted">${t('pick_hint')}</small></span><input type="text" id="diag" value="${esc(draft.diagnosis || '')}" placeholder="${t('diag_ph')}"></label>
+        <div class="chips pick" id="diagChips"></div>
         <label class="check"><input type="checkbox" id="showDiag" ${draft.showDiagnosis ? 'checked' : ''}> ${t('diag_label')}</label>
-        <div id="diagBox" ${draft.showDiagnosis ? '' : 'hidden'}><input type="text" id="diag" value="${esc(draft.diagnosis || '')}" placeholder="${t('diag_ph')}"></div>
         <div class="small muted recipient"><b>${t('recipient')}:</b><br><span class="pre">${esc(M.recipientLines(p).join('\n'))}</span>${M.patientLine(p) ? `<br>${t('patient')}: ${esc(M.patientLine(p))}` : ''}
           <br><a href="#/patient/${p?.id}">${t('edit_patient')}</a></div>
       </div>
       <div class="card"><h2>${t('dates_title')} <span class="muted normal" id="dcount"></span></h2>
         <p class="small muted">${t('dates_hint')}</p><div id="cal"></div></div>
-      <div class="card"><h2>${t('items')}</h2><div id="items"></div><div id="sum"></div>
+      <div class="card"><h2>${t('items')}</h2><p class="small muted">${t('pick_svc')}</p><div class="chips pick" id="svcChips"></div><div id="items"></div><div id="sum"></div>
         <div class="row keep add"><select id="addSvc">${db.services.filter((s) => s.active).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0)).map((s) => `<option value="${s.id}">${esc(s.name)} · ${fmtMoney(s.priceCents)} €</option>`).join('')}<option value="">${t('free_item')}</option></select><button class="btn" id="addBtn">${icon('plus')} ${t('add_item')}</button></div></div>
       <div class="card"><h2>${t('internal_note')}</h2><textarea id="note" placeholder="${t('internal_note_ph')}">${esc(draft.note || '')}</textarea></div>
       <div class="card" id="checks"></div>
@@ -351,7 +352,8 @@ export function invoiceForm(view, id, query) {
     $('#rxDate', view) && ($('#rxDate', view).onchange = (e) => { draft.prescriptionDate = e.target.value; changed('cal'); });
     $('#idate', view).onchange = (e) => { draft.invoiceDate = e.target.value; changed('cal'); $('#inum', view).placeholder = t('auto_ph', { n: M.nextNumber(db, draft.invoiceDate || todayISO()) }); };
     $('#inum', view).onchange = (e) => { draft.number = e.target.value.trim(); changed(); };
-    $('#showDiag', view).onchange = (e) => { draft.showDiagnosis = e.target.checked; $('#diagBox', view).hidden = !e.target.checked; changed(); };
+    $('#showDiag', view).onchange = (e) => { draft.showDiagnosis = e.target.checked; changed(); };
+    $('#diag', view).oninput = (e) => { draft.diagnosis = e.target.value; renderDiagChips(); };
     $('#diag', view).onchange = (e) => { draft.diagnosis = e.target.value; changed(); };
     $('#note', view).onchange = (e) => { draft.note = e.target.value; changed(); };
     $('#addBtn', view).onclick = () => {
@@ -370,8 +372,36 @@ export function invoiceForm(view, id, query) {
       await V.commit((x) => M.deleteRecord(x, 'invoices', draft.id));
       go('#/rechnungen');
     });
-    renderCal(); renderItems(); renderSum(); renderChecks();
+    renderCal(); renderItems(); renderSum(); renderChecks(); renderDiagChips();
     setStatus(saved ? 'saved' : 'new');
+  }
+
+  // Dijagnoze iz liste brzog izbora: klik dodaje/uklanja, i uključuje prikaz na računu
+  function renderDiagChips() {
+    const list = V.db().praxis.diagnoses || [];
+    $('#diagChips', view).innerHTML = list.map((d, i) => `<button type="button" class="chip ${M.hasPick(draft.diagnosis, d) ? 'on' : ''}" data-dg="${i}" aria-pressed="${M.hasPick(draft.diagnosis, d)}">${esc(d)}</button>`).join('')
+      + `<a class="chip-link small" href="#/einstellungen/auswahl">${icon('settings')} ${t('edit_picks')}</a>`;
+    on(view, '#diagChips [data-dg]', 'click', (e, b) => {
+      draft.diagnosis = M.togglePick(draft.diagnosis, list[+b.dataset.dg]);
+      $('#diag', view).value = draft.diagnosis;
+      if (draft.diagnosis && !draft.showDiagnosis) { draft.showDiagnosis = true; $('#showDiag', view).checked = true; }
+      renderDiagChips(); changed();
+    });
+  }
+
+  // Usluge kao dugmići: klik dodaje stavku (količina = termini) ili je uklanja
+  function renderSvcChips() {
+    const svcs = V.db().services.filter((s) => s.active).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+    $('#svcChips', view).innerHTML = svcs.map((s) => {
+      const isOn = draft.items.some((it) => it.serviceId === s.id);
+      return `<button type="button" class="chip ${isOn ? 'on' : ''}" data-sv="${s.id}" aria-pressed="${isOn}">${isOn ? '✓ ' : '+ '}${esc(s.name)}</button>`;
+    }).join('') + `<a class="chip-link small" href="#/einstellungen/leistungen">${icon('settings')} ${t('edit_picks')}</a>`;
+    on(view, '#svcChips [data-sv]', 'click', (e, b) => {
+      const s = svcs.find((x) => x.id === b.dataset.sv);
+      if (draft.items.some((it) => it.serviceId === s.id)) draft.items = draft.items.filter((it) => it.serviceId !== s.id);
+      else draft.items.push(M.itemFromService(s, draft.dates.length));
+      changed('items');
+    });
   }
 
   function renderCal() {
@@ -412,6 +442,7 @@ export function invoiceForm(view, id, query) {
   }
 
   function renderItems() {
+    renderSvcChips();
     $('#items', view).innerHTML = draft.items.length ? draft.items.map((it, i) => `<div class="item" data-i="${i}">
       <div class="top"><span class="pos">${i + 1}.</span><input type="text" data-k="desc" value="${esc(it.desc)}" aria-label="${t('service')}"><button type="button" class="btn sm icon-only" data-del="${i}" aria-label="${t('remove')}">${icon('trash')}</button></div>
       <div class="grid3">
@@ -470,7 +501,7 @@ export function invoiceForm(view, id, query) {
     const body = `<p>${t('confirm_final', { n: esc(num), s: fmtMoney(M.invoiceTotal(cur)) })}</p>
       ${v.warnings.length ? `<p><b>${t('warnings')}:</b></p><ul class="checks">${v.warnings.map((x) => `<li class="wrn">${icon('warn')} <span>${t(x.k, x.p || {})}</span></li>`).join('')}</ul>` : ''}`;
     if (!(await dialog({ title: t('save_final'), body, ok: t('finalize_n', { n: num }) }))) return;
-    await V.commit((x) => M.finalize(x, x.invoices.find((i) => i.id === draft.id)));
+    await V.commit((x) => { const i = M.finalize(x, x.invoices.find((y) => y.id === draft.id)); if (i.showDiagnosis) M.learnPicks(x, 'diagnoses', i.diagnosis); });
     await addHash(draft.id);
     const fin = V.db().invoices.find((i) => i.id === draft.id);
     toast(t('finalized_as', { n: fin.number }));
