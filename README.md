@@ -80,6 +80,7 @@ Na telefonu: u browseru *Dodaj na početni ekran* → ponaša se kao aplikacija.
 | Telefon izgubljen / ukraden | Podaci na njemu su šifrovani. Za svaki slučaj promeni šifru (*Passwort ändern*) sa drugog uređaja. |
 | Ključ istekao (crvena poruka „GitHub-Zugang abgelaufen“) | Napravi novi ključ (korak 1) → *Daten & Sicherung → GitHub-Zugangsschlüssel erneuern*. Ništa se ne gubi; u međuvremenu se sve čuva lokalno. |
 | „Doppelte Rechnungsnummer“ | Desi se samo ako su dva uređaja istovremeno pravila račun bez interneta. Jedan od ta dva računa storniraj i napravi ponovo. |
+| Greška na poslednjem računu, još nije predat | Otvori račun → **Bearbeiten** (vidi se samo za poslednji broj, ako nije označen kao poslat/plaćen). Postaje nacrt sa **istim brojem** → ispravi → *Finalisieren*. Slanje PDF-a iz aplikacije (*Senden / teilen*) račun automatski označava kao poslat. |
 | Probni / pogrešan račun koji nije poslat | Otvori račun → *Weitere Aktionen* → **Rechnung löschen** (potvrda kvadratićem). Ako je bio poslednji u mesecu, broj se oslobađa (npr. `1026/02` može ponovo). |
 | Posle testiranja: sve ispočetka | **Einstellungen → Alles zurücksetzen**: šifra + dve potvrde. Briše pacijente i račune na svim uređajima; podaci prakse i cene mogu da ostanu. Staro stanje ostaje u *Versionen*. |
 | Dodatna sigurnost | Jednom mesečno: *Verschlüsselte Sicherung herunterladen* i sačuvaj fajl na USB / drugi disk. |

@@ -1,6 +1,14 @@
 // Prevodi (DE / SR). Računi (PDF) su uvek na nemačkom; jezik ovde menja samo ekran.
 
 const DE = {
+  edit_invoice: 'Bearbeiten',
+  edit_invoice_info: 'Die Rechnung wird wieder zum Entwurf und behält die Nummer {n}. Nach dem Ändern erneut „Finalisieren“ – das neue PDF ersetzt das alte.',
+  edit_invoice_warn: 'Nur wenn die Rechnung noch NICHT beim Patienten ist – weder per E-Mail/WhatsApp noch ausgedruckt übergeben! Sonst „Korrigieren“ benutzen.',
+  edit_invoice_sure: 'Die Rechnung wurde weder verschickt noch ausgedruckt übergeben',
+  edit_not_last: 'Nicht mehr möglich: Inzwischen gibt es eine neuere Rechnung, oder diese wurde verschickt. Bitte „Korrigieren“ benutzen.',
+  edit_reopened: 'Rechnung {n} ist wieder ein Entwurf.',
+  auto_sent: 'Als versendet markiert',
+  v_number_month: 'Die Nummer {n} passt nicht zum Monat des Rechnungsdatums. Nummer-Feld leeren, damit eine passende Nummer vergeben wird.',
   del_invoice: 'Rechnung löschen',
   del_invoice_warn: 'Achtung: Die Rechnung wird endgültig gelöscht – nicht storniert. Nur für Test- oder Fehlrechnungen verwenden, die nie verschickt wurden! Verschickte Rechnungen müssen 10 Jahre aufbewahrt werden; dafür „Stornieren“ oder „Korrigieren“ benutzen.',
   del_invoice_pair: 'Die zugehörige Stornorechnung Nr. {n} wird ebenfalls gelöscht.',
@@ -175,6 +183,14 @@ const DE = {
 };
 
 const SR = {
+  edit_invoice: 'Izmeni',
+  edit_invoice_info: 'Račun ponovo postaje nacrt i zadržava broj {n}. Posle izmene ponovo klikni „Finalizuj“ – novi PDF zamenjuje stari.',
+  edit_invoice_warn: 'Samo ako račun još NIJE kod pacijenta – ni poslat mailom/WhatsApp-om, ni odštampan i predat! Inače koristi „Ispravi“.',
+  edit_invoice_sure: 'Račun nije ni poslat ni odštampan i predat',
+  edit_not_last: 'Više nije moguće: u međuvremenu postoji noviji račun, ili je ovaj poslat. Koristi „Ispravi“.',
+  edit_reopened: 'Račun {n} je ponovo nacrt.',
+  auto_sent: 'Označeno kao poslato',
+  v_number_month: 'Broj {n} ne odgovara mesecu datuma računa. Obriši polje za broj da se dodeli odgovarajući.',
   del_invoice: 'Obriši račun',
   del_invoice_warn: 'Pažnja: račun se trajno briše – ne stornira se. Koristi samo za probne ili pogrešne račune koji nikad nisu poslati! Poslate račune treba čuvati 10 godina; za njih koristi „Storniraj“ ili „Ispravi“.',
   del_invoice_pair: 'Briše se i pripadajući storno račun br. {n}.',

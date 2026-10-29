@@ -86,7 +86,7 @@ export function invoiceList(view, arg, query) {
 
 /* ===================== PDF akcije ===================== */
 
-async function pdfActions(doc, name, title) {
+async function pdfActions(doc, name, title, onShare) {
   const blob = await busy(t('pdf_creating'), () => pdfBlob(doc));
   const r = await dialog({
     title,
@@ -97,7 +97,7 @@ async function pdfActions(doc, name, title) {
     ok: t('close'), cancel: false,
     onOpen: (m) => on(m, '[data-p]', 'click', (e, b) => {
       if (b.dataset.p === 'open') openBlob(blob, name);
-      if (b.dataset.p === 'share') share(blob, name, title);
+      if (b.dataset.p === 'share') { share(blob, name, title); onShare?.(); }
       if (b.dataset.p === 'dl') download(blob, name);
     }),
   });
@@ -124,6 +124,7 @@ export function invoiceDetail(view, id) {
 
     <div class="actions" id="acts">
       <button class="btn primary" data-a="pdf">${icon('pdf')} ${t('pdf')}</button>
+      ${M.canReopen(db, inv) ? `<button class="btn" data-a="edit">${icon('edit')} ${t('edit_invoice')}</button>` : ''}
       ${inv.status === 'final' ? `<button class="btn" data-a="sent">${t('mark_sent')}</button>` : ''}
       ${M.OPEN.includes(inv.status) ? `<button class="btn" data-a="paid">${icon('check')} ${t('mark_paid')}</button>` : ''}
       ${M.OPEN.includes(inv.status) && inv.dueDate < todayISO() ? `<button class="btn" data-a="remind">${t('reminder')}</button>` : ''}
@@ -164,7 +165,7 @@ export function invoiceDetail(view, id) {
   $('#note', view).onchange = (e) => V.commit((d) => { const x = d.invoices.find((i) => i.id === id); x.note = e.target.value; M.touch(x); }).then(() => toast(t('saved')));
 
   const act = {
-    pdf: () => pdfActions(invoiceDoc(s), pdfName(s), `${t(inv.kind === 'storno' ? 'storno_invoice' : 'invoice')} ${inv.number}`),
+    pdf: () => pdfActions(invoiceDoc(s), pdfName(s), `${t(inv.kind === 'storno' ? 'storno_invoice' : 'invoice')} ${inv.number}`, () => autoSent(id)).then(() => invoiceDetail(view, id)),
     sent: async () => {
       const d = await dialog({ title: t('mark_sent'), input: { label: t('sent_on'), type: 'date', value: todayISO() } });
       if (d) await V.commit((x) => M.markSent(x.invoices.find((i) => i.id === id), d));
@@ -203,6 +204,24 @@ export function invoiceDetail(view, id) {
       const c = await V.commit((x) => M.copyAsDraft(x, x.invoices.find((i) => i.id === id), { withDates: true }));
       toast(t('correct_done'));
       go('#/neu/' + c.id);
+    },
+    edit: async () => {
+      const ok = await dialog({
+        title: `${t('edit_invoice')} ${inv.number}`,
+        body: `<p>${t('edit_invoice_info', { n: esc(inv.number) })}</p>
+          <p class="hint warn">${t('edit_invoice_warn')}</p>
+          <label class="check"><input type="checkbox" id="notsent"> ${t('edit_invoice_sure')}</label>`,
+        ok: t('edit_invoice'),
+        collect: (m) => m.querySelector('#notsent').checked || 'unchecked',
+      });
+      if (!ok) return;
+      if (ok === 'unchecked') { toast(t('del_need_check'), 'error'); return; }
+      if (!(await syncBeforeNumber())) return;
+      const cur = V.db().invoices.find((i) => i.id === id);
+      if (!cur || !M.canReopen(V.db(), cur)) { toast(t('edit_not_last'), 'error'); invoiceDetail(view, id); return; }
+      await V.commit((x) => M.reopen(x, x.invoices.find((i) => i.id === id)));
+      toast(t('edit_reopened', { n: inv.number }));
+      go('#/neu/' + id, true);
     },
     del: async () => {
       const pair = inv.cancelledBy ? other(inv.cancelledBy) : null;
@@ -247,6 +266,14 @@ async function syncBeforeNumber() {
   } catch {
     return confirmBox(t('offline_number_warn'), { ok: t('continue_anyway'), danger: true });
   }
+}
+
+// Slanje PDF-a iz aplikacije (mail, WhatsApp …) automatski označava račun kao poslat
+async function autoSent(id) {
+  const i = V.db()?.invoices.find((x) => x.id === id);
+  if (i?.status !== 'final') return;
+  await V.commit((x) => M.markSent(x.invoices.find((y) => y.id === id)));
+  toast(t('auto_sent'));
 }
 
 async function stornoNow(id) {
@@ -325,7 +352,7 @@ export function invoiceForm(view, id, query) {
     const db = V.db();
     const p = db.patients.find((x) => x.id === draft.patientId);
     view.innerHTML = `<a href="#/rechnungen" class="back">${icon('left')} ${t('nav_invoices')}</a>
-      <div class="head-row"><h1>${draft.correctionOf ? t('correction_of', { n: esc(draft.correctionOf) }) : saved ? t('edit_draft') : t('new_invoice')}</h1><span id="saveState" class="small"></span></div>
+      <div class="head-row"><h1>${draft.correctionOf ? t('correction_of', { n: esc(draft.correctionOf) }) : draft.reopenedAt && draft.number ? `${t('edit_invoice')} ${esc(draft.number)}` : saved ? t('edit_draft') : t('new_invoice')}</h1><span id="saveState" class="small"></span></div>
       <div class="card"><h2>${t('patient_presc')}</h2>
         <div class="row">
           <label class="field grow2"><span>${t('patient')}</span><select id="pat">${activePatients(db, draft.patientId).map((x) => `<option value="${x.id}" ${x.id === draft.patientId ? 'selected' : ''}>${esc(M.sortName(x))}${x.institution ? ' · ' + esc(x.institution) : ''}</option>`).join('')}</select></label>
@@ -525,7 +552,7 @@ export function invoiceForm(view, id, query) {
     const fin = V.db().invoices.find((i) => i.id === draft.id);
     toast(t('finalized_as', { n: fin.number }));
     go('#/rechnung/' + draft.id);
-    pdfActions(invoiceDoc(fin.snapshot), pdfName(fin.snapshot), `${t('invoice')} ${fin.number}`).catch(showErr);
+    pdfActions(invoiceDoc(fin.snapshot), pdfName(fin.snapshot), `${t('invoice')} ${fin.number}`, () => autoSent(draft.id)).then(() => { if (location.hash === '#/rechnung/' + draft.id) go('#/rechnung/' + draft.id, true); }).catch(showErr);
   }
 
   renderAll();

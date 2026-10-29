@@ -267,6 +267,7 @@ export function validate(db, inv, today = todayISO()) {
 
   if (inv.number && numberTaken(db, inv.number, inv.id)) E('v_number_taken', { n: inv.number });
   if (inv.number && !/^\S+$/.test(inv.number)) E('v_number_format');
+  if (/^\d{4}\//.test(inv.number || '') && isISODate(inv.invoiceDate) && !inv.number.startsWith(numberPrefix(inv.invoiceDate))) W('v_number_month', { n: inv.number });
 
   if (!inv.items.length) E('v_no_items');
   inv.items.forEach((it, idx) => {
@@ -436,6 +437,24 @@ export function deleteRecord(db, coll, id) {
 }
 
 export function canDeleteInvoice(inv) { return inv.status === 'draft'; }
+
+// Izmena finalizovanog računa: samo poslednji broj u nizu, koji nije poslat, plaćen, storniran ni opominjan.
+// Račun se vraća u nacrt i ZADRŽAVA broj (nacrt sa brojem rezerviše taj broj, nextNumber ga preskače).
+export function canReopen(db, inv) {
+  if (inv.kind !== 'invoice' || inv.status !== 'final' || inv.cancelledBy || inv.reminders?.length) return false;
+  const k = inv.number.indexOf('/');
+  if (k < 0) return false;
+  const prefix = inv.number.slice(0, k + 1), mine = Number(inv.number.slice(k + 1));
+  return !db.invoices.some((i) => i.id !== inv.id && i.number?.startsWith(prefix) && Number(i.number.slice(prefix.length)) > mine);
+}
+
+export function reopen(db, inv) {
+  if (!canReopen(db, inv)) throw new Error('status');
+  inv.status = 'draft';
+  delete inv.snapshot; delete inv.dueDate; delete inv.finalizedAt;
+  inv.reopenedAt = nowStamp();
+  return touch(inv);
+}
 
 // Brisanje i finalizovanog računa (npr. pogrešan probni račun). Storno par se briše zajedno;
 // brisanje samo storno računa vraća original u prethodni status. Vraća brojeve obrisanih računa.

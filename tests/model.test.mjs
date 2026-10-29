@@ -224,3 +224,37 @@ test('factoryReset: briše pacijente i račune, po želji čuva podešavanja', (
   const wipe = M.factoryReset(db, { keepSettings: false });
   assert.equal(wipe.praxis.name, '');
 });
+
+test('reopen: samo poslednji, neposlat račun; broj ostaje i ostaje rezervisan', () => {
+  const { db, p } = setup();
+  const a = M.finalize(db, draftWith(db, p, ['2026-09-01'], '2026-10-09'), '2026-10-10');
+  const b = M.finalize(db, draftWith(db, p, ['2026-09-02'], '2026-10-09'), '2026-10-10');
+  assert.equal(M.canReopen(db, a), false);
+  assert.equal(M.canReopen(db, b), true);
+  M.reopen(db, b);
+  assert.equal(b.status, 'draft');
+  assert.equal(b.number, '1026/02');
+  assert.equal(b.snapshot, undefined);
+  assert.equal(M.nextNumber(db, '2026-10-20'), '1026/03');
+  assert.equal(M.billedDates(db, p.id).has('2026-09-02'), false);
+  b.dates = ['2026-09-03']; M.syncLinked(b);
+  M.finalize(db, b, '2026-10-10');
+  assert.equal(b.number, '1026/02');
+  M.markSent(b);
+  assert.equal(M.canReopen(db, b), false);
+  assert.throws(() => M.reopen(db, b));
+});
+
+test('reopen: storniran račun i račun posle kog postoji storno se ne menjaju', () => {
+  const { db, p } = setup();
+  const a = M.finalize(db, draftWith(db, p, ['2026-09-01'], '2026-10-09'), '2026-10-10');
+  M.createStorno(db, a, '2026-10-11');
+  assert.equal(M.canReopen(db, a), false);
+});
+
+test('validate: upozorenje kad broj ne odgovara mesecu', () => {
+  const { db, p } = setup();
+  const d = draftWith(db, p, ['2026-09-01'], '2026-11-02');
+  d.number = '1026/02';
+  assert.ok(M.validate(db, d, '2026-11-03').warnings.some((w) => w.k === 'v_number_month'));
+});
