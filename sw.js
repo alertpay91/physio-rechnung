@@ -1,6 +1,6 @@
 // Service worker: aplikacija radi i bez interneta. Uvek prvo pokušava mrežu (najnovija verzija),
 // a keš koristi samo kad mreže nema. GitHub API i access.json se nikad ne keširaju ovde.
-const CACHE = 'physio-v3';
+const CACHE = 'physio-v4';
 const SHELL = [
   './', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
   'js/app.js', 'js/util.js', 'js/model.js', 'js/crypto.js', 'js/store.js', 'js/github.js', 'js/vault.js', 'js/pdf.js', 'js/zip.js', 'js/ui.js', 'js/i18n.js',

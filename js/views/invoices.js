@@ -141,7 +141,7 @@ export function invoiceDetail(view, id) {
       <div><span>${t('recipient')}</span><span class="pre">${esc(s.recipient.join('\n'))}</span></div>
     </div></div>
 
-    <div class="card"><h2>${t('items')}</h2><div class="tablewrap"><table><thead><tr><th>${t('pos')}</th><th>${t('service')}</th><th class="num">${t('qty')}</th><th class="num">${t('unit')}</th><th class="num">${t('total')}</th></tr></thead><tbody>
+    <div class="card"><h2>${t('items')}</h2><div class="tablewrap always"><table><thead><tr><th>${t('pos')}</th><th>${t('service')}</th><th class="num">${t('qty')}</th><th class="num">${t('unit')}</th><th class="num">${t('total')}</th></tr></thead><tbody>
       ${s.items.map((it, i) => `<tr><td>${i + 1}</td><td>${it.ziffer ? `<span class="muted">${esc(it.ziffer)}</span> ` : ''}${esc(it.desc)}</td><td class="num">${it.qty}</td><td class="num">${fmtMoney(it.priceCents)}</td><td class="num">${fmtMoney(it.totalCents)}</td></tr>`).join('')}
       <tr class="sum"><td colspan="4" class="num">${t('grand')}</td><td class="num">${fmtMoney(s.totalCents)} €</td></tr></tbody></table></div>
       ${s.dates.length ? `<p class="small muted">${t('dates_n', { n: s.dates.length })}: ${esc(s.datesText)}</p>` : ''}

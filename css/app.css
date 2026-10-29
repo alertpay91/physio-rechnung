@@ -262,7 +262,7 @@ table.cmp td, table.cmp th { padding: 6px 8px; }
   .row > *, .row > .narrow { flex: 1 1 100%; }
   .row.keep > * { flex: 1 1 42%; }
   .row.keep > .grow { flex: 1 1 100%; }
-  .tablewrap { display: none; } .list { display: block; }
+  .tablewrap { display: none; } .tablewrap.always { display: block; } .list { display: block; }
   .li { display: flex; justify-content: space-between; gap: 10px; padding: 12px 2px; border-bottom: 1px solid var(--line2); text-decoration: none; color: var(--ink); }
   .li:last-child { border-bottom: 0; }
   .li .a { min-width: 0; } .li .a b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
