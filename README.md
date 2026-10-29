@@ -80,6 +80,8 @@ Na telefonu: u browseru *Dodaj na početni ekran* → ponaša se kao aplikacija.
 | Telefon izgubljen / ukraden | Podaci na njemu su šifrovani. Za svaki slučaj promeni šifru (*Passwort ändern*) sa drugog uređaja. |
 | Ključ istekao (crvena poruka „GitHub-Zugang abgelaufen“) | Napravi novi ključ (korak 1) → *Daten & Sicherung → GitHub-Zugangsschlüssel erneuern*. Ništa se ne gubi; u međuvremenu se sve čuva lokalno. |
 | „Doppelte Rechnungsnummer“ | Desi se samo ako su dva uređaja istovremeno pravila račun bez interneta. Jedan od ta dva računa storniraj i napravi ponovo. |
+| Probni / pogrešan račun koji nije poslat | Otvori račun → *Weitere Aktionen* → **Rechnung löschen** (potvrda kvadratićem). Ako je bio poslednji u mesecu, broj se oslobađa (npr. `1026/02` može ponovo). |
+| Posle testiranja: sve ispočetka | **Einstellungen → Alles zurücksetzen**: šifra + dve potvrde. Briše pacijente i račune na svim uređajima; podaci prakse i cene mogu da ostanu. Staro stanje ostaje u *Versionen*. |
 | Dodatna sigurnost | Jednom mesečno: *Verschlüsselte Sicherung herunterladen* i sačuvaj fajl na USB / drugi disk. |
 | GitHub nedostupan | Aplikacija radi normalno sa lokalnom kopijom i šalje podatke kasnije. |
 
@@ -88,7 +90,7 @@ Na telefonu: u browseru *Dodaj na početni ekran* → ponaša se kao aplikacija.
 ## Pravne napomene (proveriti sa Steuerberater-om)
 - Napomena na računu: *„Gemäß § 4 Nr. 14 lit. a UStG wird keine Umsatzsteuer erhoben“*. Važi za tretmane po **lekarskom nalogu (Verordnung)**. Za usluge bez naloga (wellness, prevencija bez naloga) može da važi PDV. Zato aplikacija upozorava kad račun nema datum Verordnung-a.
 - Obaveza e-računa (E-Rechnung) za izdavanje **ne važi** za poreski oslobođene tretmane (§ 4 Nr. 8–29 UStG) i za račune privatnim licima. PDF je dovoljan.
-- Čuvanje: račune čuvati **najmanje 10 godina** (ovde se ništa ne briše; finalizovani računi ne mogu ni da se obrišu).
+- Čuvanje: račune čuvati **najmanje 10 godina**. Poslate račune ne brisati nego stornirati. *Rechnung löschen* je samo za probne/pogrešne račune koji nikad nisu poslati.
 - GDPR: podaci su šifrovani pre slanja (GitHub vidi samo šifrovan tekst). Upiši ovaj program u Verzeichnis von Verarbeitungstätigkeiten prakse. Fontovi su ugrađeni (nema Google Fonts).
 - GKV pacijenti: GKV usluge se naplaćuju preko kase / Abrechnungsstelle (§ 302 SGB V), ne ovim programom.
 

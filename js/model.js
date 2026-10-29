@@ -436,6 +436,40 @@ export function deleteRecord(db, coll, id) {
 }
 
 export function canDeleteInvoice(inv) { return inv.status === 'draft'; }
+
+// Brisanje i finalizovanog računa (npr. pogrešan probni račun). Storno par se briše zajedno;
+// brisanje samo storno računa vraća original u prethodni status. Vraća brojeve obrisanih računa.
+export function deleteInvoice(db, id) {
+  const inv = db.invoices.find((i) => i.id === id);
+  if (!inv) return [];
+  const gone = [inv];
+  if (inv.cancelledBy) {
+    const s = db.invoices.find((i) => i.id === inv.cancelledBy);
+    if (s) gone.push(s);
+  }
+  if (inv.kind === 'storno' && inv.cancels) {
+    const orig = db.invoices.find((i) => i.id === inv.cancels);
+    if (orig && orig.status === 'cancelled') {
+      orig.status = orig.prevStatus || 'final';
+      delete orig.cancelledBy;
+      touch(orig);
+    }
+  }
+  for (const g of gone) deleteRecord(db, 'invoices', g.id);
+  return gone.map((g) => g.number).filter(Boolean);
+}
+
+// Fabričko resetovanje: brišu se svi pacijenti i računi. Podaci prakse, cene i liste brzog izbora
+// po želji ostaju. Vraća nove podatke; vault.replaceAll ih upisuje kao novu "generaciju" na sve uređaje.
+export function factoryReset(db, { keepSettings = true } = {}) {
+  const fresh = newDB();
+  if (keepSettings) {
+    fresh.praxis = { ...clone(db.praxis), updatedAt: nowStamp() };
+    fresh.services = clone(db.services);
+  }
+  fresh.meta = { createdAt: nowStamp(), resetAt: nowStamp() };
+  return fresh;
+}
 export function canDeletePatient(db, id) { return !db.invoices.some((i) => i.patientId === id); }
 export function canDeleteService(db, id) { return !db.invoices.some((i) => i.items.some((it) => it.serviceId === id)); }
 

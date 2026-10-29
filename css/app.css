@@ -285,3 +285,4 @@ table.cmp td, table.cmp th { padding: 6px 8px; }
   .versions .li .a b { display: block; }
 }
 @media print { nav.side, .topbar, .fab, .actions { display: none !important; } }
+.card.danger-zone { border-color: var(--danger); margin-top: 28px; }

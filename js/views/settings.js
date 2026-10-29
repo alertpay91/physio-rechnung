@@ -3,7 +3,7 @@
 import * as V from '../vault.js';
 import * as M from '../model.js';
 import { t } from '../i18n.js';
-import { $, $$, on, toast, confirmBox, icon } from '../ui.js';
+import { $, $$, on, toast, confirmBox, dialog, busy, icon } from '../ui.js';
 import { esc, clone, norm, uid, nowStamp, parseMoney, moneyInput, ibanValid, ibanFormat, stableStringify, todayISO, addDays } from '../util.js';
 import { setGuard, go } from '../app.js';
 import { pdfActions, showErr } from './invoices.js';
@@ -81,7 +81,12 @@ function praxis(el) {
       ${ta('closing', t('closing'))}
     </div>
     <div class="actions sticky-actions"><button class="btn primary" type="submit">${t('save')}</button><button class="btn" type="button" id="sample">${icon('pdf')} ${t('sample_pdf')}</button></div>
-    </form>`;
+    </form>
+    <div class="card danger-zone"><h2>${icon('warn')} ${t('reset_title')}</h2>
+      <p class="small">${t('reset_info')}</p>
+      <div class="actions"><button class="btn danger" type="button" id="reset">${icon('trash')} ${t('reset_btn')}</button></div>
+    </div>`;
+  $('#reset', el).onclick = () => factoryReset().catch(showErr);
   const ibanState = () => {
     const ok = ibanValid(pr.iban);
     $('#ibanState', el).innerHTML = pr.iban ? (ok ? `<span class="ok">${icon('check')} ${t('iban_ok')}</span>` : `<span class="bad-text">${icon('warn')} ${t('iban_bad')}</span>`) : '';
@@ -168,4 +173,29 @@ function servicesTab(el) {
     };
   };
   render();
+}
+
+// Fabričko resetovanje: briše sve pacijente i račune (posle testiranja), uz dvostruku potvrdu i šifru.
+// Stare verzije ostaju u istoriji (Daten & Sicherung → Versionen) i u lokalnim kopijama.
+async function factoryReset() {
+  const sum = M.summary(V.db());
+  const r = await dialog({
+    title: t('reset_title'),
+    body: `<p class="hint danger">${t('reset_warn', { p: sum.patients, i: sum.invoices + sum.drafts })}</p>
+      <label class="check"><input type="checkbox" id="keep" checked> ${t('reset_keep')}</label>
+      <p class="small muted">${t('reset_undo')}</p>
+      <label class="field"><span>${t('reset_pw')}</span><input type="password" id="pw" autocomplete="current-password"></label>`,
+    ok: t('reset_btn'), danger: true,
+    collect: (m) => ({ keep: m.querySelector('#keep').checked, pw: m.querySelector('#pw').value }),
+  });
+  if (!r) return;
+  if (!(await V.verifyPassword(r.pw))) { toast(t('wrong_pw'), 'error'); return; }
+  if (!(await confirmBox(t('reset_last'), { danger: true, ok: t('reset_btn') }))) return;
+  await busy(t('reset_busy'), async () => {
+    if (V.status.mode === 'cloud') await V.syncNow().catch(() => {});
+    await V.replaceAll(M.factoryReset(V.db(), { keepSettings: r.keep }), 'replace');
+  });
+  setGuard(null);
+  toast(t('reset_done'));
+  go('#/', true);
 }

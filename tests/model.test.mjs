@@ -187,3 +187,40 @@ test('brzi izbor: dijagnoze i lekari', () => {
   old.praxis.diagnoses.push('Y');
   assert.ok(!M.DIAG_SEED.includes('Y'));
 });
+
+test('deleteInvoice: brisanje finalizovanog računa oslobađa broj', () => {
+  const { db, p } = setup();
+  const a = M.finalize(db, draftWith(db, p, ['2026-09-01'], '2026-10-09'), '2026-10-10');
+  const b = M.finalize(db, draftWith(db, p, ['2026-09-02'], '2026-10-09'), '2026-10-10');
+  assert.equal(b.number, '1026/02');
+  assert.deepEqual(M.deleteInvoice(db, b.id), ['1026/02']);
+  assert.ok(db.tombstones[b.id]);
+  assert.equal(M.nextNumber(db, '2026-10-20'), '1026/02');
+  assert.equal(db.invoices.length, 1);
+  assert.equal(a.status, 'final');
+});
+
+test('deleteInvoice: storno par se briše zajedno, brisanje storna vraća original', () => {
+  const { db, p } = setup();
+  const a = M.finalize(db, draftWith(db, p, ['2026-09-01'], '2026-10-09'), '2026-10-10');
+  const s = M.createStorno(db, a, '2026-10-11');
+  M.deleteInvoice(db, s.id);
+  assert.equal(a.status, 'final');
+  assert.equal(a.cancelledBy, undefined);
+  const s2 = M.createStorno(db, a, '2026-10-12');
+  assert.equal(M.deleteInvoice(db, a.id).length, 2);
+  assert.ok(!db.invoices.some((i) => i.id === a.id || i.id === s2.id));
+});
+
+test('factoryReset: briše pacijente i račune, po želji čuva podešavanja', () => {
+  const { db, p } = setup();
+  M.finalize(db, draftWith(db, p, ['2026-09-01'], '2026-10-09'), '2026-10-10');
+  const keep = M.factoryReset(db, { keepSettings: true });
+  assert.equal(keep.patients.length, 0);
+  assert.equal(keep.invoices.length, 0);
+  assert.equal(keep.praxis.name, 'Max Muster');
+  assert.deepEqual(keep.services.map((x) => x.id), db.services.map((x) => x.id));
+  assert.equal(M.nextNumber(keep, '2026-10-20'), '1026/01');
+  const wipe = M.factoryReset(db, { keepSettings: false });
+  assert.equal(wipe.praxis.name, '');
+});

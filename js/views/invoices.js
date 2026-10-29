@@ -155,6 +155,7 @@ export function invoiceDetail(view, id) {
       <div class="actions">
         ${inv.kind === 'invoice' && M.BILLED.includes(inv.status) ? `<button class="btn" data-a="correct">${t('correct')}</button><button class="btn danger" data-a="storno">${t('storno')}</button>` : ''}
         ${inv.kind === 'invoice' ? `<button class="btn" data-a="copy">${t('copy_draft')}</button>` : ''}
+        <button class="btn danger" data-a="del">${icon('trash')} ${t('del_invoice')}</button>
       </div>
       <p class="small muted">${t('locked_note')}</p>
       ${s.hash ? `<p class="small muted mono">${t('integrity')}: ${s.hash.slice(0, 16)}… · ${t('finalized_at')} ${new Date(inv.finalizedAt).toLocaleString(locale())}</p>` : ''}
@@ -202,6 +203,24 @@ export function invoiceDetail(view, id) {
       const c = await V.commit((x) => M.copyAsDraft(x, x.invoices.find((i) => i.id === id), { withDates: true }));
       toast(t('correct_done'));
       go('#/neu/' + c.id);
+    },
+    del: async () => {
+      const pair = inv.cancelledBy ? other(inv.cancelledBy) : null;
+      const ok = await dialog({
+        title: `${t('del_invoice')} ${inv.number}`,
+        body: `<p class="hint danger">${t('del_invoice_warn')}</p>
+          ${pair ? `<p>${t('del_invoice_pair', { n: esc(pair.number) })}</p>` : ''}
+          ${inv.kind === 'storno' ? `<p>${t('del_storno_restore', { n: esc(inv.cancelsNumber) })}</p>` : ''}
+          <p class="small muted">${t('del_invoice_number')}</p>
+          <label class="check"><input type="checkbox" id="sure"> ${t('del_invoice_sure')}</label>`,
+        ok: t('delete'), danger: true,
+        collect: (m) => m.querySelector('#sure').checked || 'unchecked',
+      });
+      if (!ok) return;
+      if (ok === 'unchecked') { toast(t('del_need_check'), 'error'); return; }
+      const nums = await V.commit((x) => M.deleteInvoice(x, id));
+      toast(t('del_invoice_done', { n: nums.join(', ') }));
+      go('#/rechnungen', true);
     },
     copy: async () => {
       const c = await V.commit((x) => M.copyAsDraft(x, x.invoices.find((i) => i.id === id), { withDates: false }));
