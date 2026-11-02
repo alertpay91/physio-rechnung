@@ -1,4 +1,4 @@
-// Početni pregled: otvoreni iznosi, dospeli računi, nacrti, upozorenja.
+// Početni pregled: otvoreni iznosi, dospeli računi, nacrti, svi računi, upozorenja.
 
 import * as V from '../vault.js';
 import * as M from '../model.js';
@@ -13,6 +13,9 @@ export async function dashboard(view) {
   const st = await V.getState();
   const pr = db.praxis;
   const banners = [];
+  // Svi računi (plaćeni i neplaćeni) ostaju na početnoj; najnoviji gore, redosled ne zavisi od statusa.
+  const all = db.invoices.filter((i) => i.status !== 'draft')
+    .sort((a, b) => b.invoiceDate.localeCompare(a.invoiceDate) || (b.number || '').localeCompare(a.number || '', undefined, { numeric: true }));
 
   const conflicts = M.numberConflicts(db);
   if (conflicts.length) banners.push(['danger', t('b_conflict', { n: conflicts.join(', ') }), '#/rechnungen']);
@@ -36,6 +39,6 @@ export async function dashboard(view) {
     <div class="actions"><a class="btn primary" href="#/neu">${icon('plus')} ${t('new_invoice')}</a><a class="btn" href="#/patient/neu">${t('new_patient')}</a></div>
     ${s.drafts.length ? `<div class="card"><h2>${t('drafts')}</h2>${invoiceTable(s.drafts)}</div>` : ''}
     ${s.overdue.length ? `<div class="card"><h2>${t('overdue')}</h2>${invoiceTable(s.overdue)}</div>` : ''}
-    <div class="card"><h2>${t('open_invoices')}</h2>${s.openCount ? invoiceTable(db.invoices.filter((i) => M.OPEN.includes(i.status)).sort((a, b) => a.invoiceDate.localeCompare(b.invoiceDate))) : `<div class="empty">${t('all_paid')}</div>`}</div>`;
+    <div class="card"><h2>${t('all_invoices')}</h2>${all.length ? invoiceTable(all) : `<div class="empty">${t('no_invoices')}</div>`}</div>`;
   bindRows(view);
 }

@@ -18,9 +18,9 @@ export function invoiceTable(list) {
   if (!list.length) return `<div class="empty">${t('none_sel')}</div>`;
   const name = (i) => esc(i.snapshot?.patientName || M.fullName(patientOf(db, i)) || '–');
   return `<div class="tablewrap"><table class="click"><thead><tr><th>${t('col_no')}</th><th>${t('col_date')}</th><th>${t('col_patient')}</th><th>${t('col_status')}</th><th class="num">${t('col_amount')}</th></tr></thead><tbody>${
-    list.map((i) => `<tr data-href="#/rechnung/${i.id}" tabindex="0"><td>${esc(i.number) || '<span class="muted">–</span>'}</td><td>${dmy(i.invoiceDate)}</td><td>${name(i)}</td><td>${tag(i)}</td><td class="num">${fmtMoney(M.amountOf(i))} €</td></tr>`).join('')
+    list.map((i) => `<tr class="st-${i.status}" data-href="#/rechnung/${i.id}" tabindex="0"><td>${esc(i.number) || '<span class="muted">–</span>'}</td><td>${dmy(i.invoiceDate)}</td><td>${name(i)}</td><td>${tag(i)}</td><td class="num">${fmtMoney(M.amountOf(i))} €</td></tr>`).join('')
   }</tbody></table></div>
-  <div class="list">${list.map((i) => `<a class="li" href="#/rechnung/${i.id}"><div class="a"><b>${name(i)}</b><span class="small muted">${esc(i.number) || t('draft_p')} · ${dmy(i.invoiceDate)}</span></div><div class="b"><b>${fmtMoney(M.amountOf(i))} €</b>${tag(i)}</div></a>`).join('')}</div>`;
+  <div class="list">${list.map((i) => `<a class="li st-${i.status}" href="#/rechnung/${i.id}"><div class="a"><b>${name(i)}</b><span class="small muted">${esc(i.number) || t('draft_p')} · ${dmy(i.invoiceDate)}</span></div><div class="b"><b>${fmtMoney(M.amountOf(i))} €</b>${tag(i)}</div></a>`).join('')}</div>`;
 }
 
 export function bindRows(root) {

@@ -40,7 +40,7 @@ const DE = {
   overdue_tag: 'überfällig', f_open: 'Offen',
 
   open_sum: 'offen ({n} Rechnungen)', month_sum: 'berechnet diesen Monat', year_sum: 'berechnet dieses Jahr', overdue: 'Überfällig', patients: 'Patienten',
-  new_invoice: 'Neue Rechnung', new_patient: 'Neuer Patient', drafts: 'Entwürfe', open_invoices: 'Offene Rechnungen', all_paid: 'Alles bezahlt.',
+  new_invoice: 'Neue Rechnung', new_patient: 'Neuer Patient', drafts: 'Entwürfe', open_invoices: 'Offene Rechnungen', all_paid: 'Alles bezahlt.', all_invoices: 'Alle Rechnungen', no_invoices: 'Noch keine Rechnungen.',
   b_conflict: 'Achtung: Rechnungsnummer {n} wurde doppelt vergeben (zwei Geräte gleichzeitig offline). Bitte eine der Rechnungen stornieren und neu erstellen.',
   b_token: 'Der GitHub-Zugang ist abgelaufen oder ungültig. Daten werden nur lokal gespeichert. Bitte Zugangsschlüssel erneuern.',
   b_sync_err: 'Die letzte Synchronisierung ist fehlgeschlagen. Die Daten sind lokal gespeichert und werden nachgeholt.',
@@ -222,7 +222,7 @@ const SR = {
   overdue_tag: 'kasni', f_open: 'Otvoreni',
 
   open_sum: 'otvoreno ({n} računa)', month_sum: 'fakturisano ovog meseca', year_sum: 'fakturisano ove godine', overdue: 'Kasne sa plaćanjem', patients: 'Pacijenti',
-  new_invoice: 'Novi račun', new_patient: 'Novi pacijent', drafts: 'Nacrti', open_invoices: 'Otvoreni računi', all_paid: 'Sve je plaćeno.',
+  new_invoice: 'Novi račun', new_patient: 'Novi pacijent', drafts: 'Nacrti', open_invoices: 'Otvoreni računi', all_paid: 'Sve je plaćeno.', all_invoices: 'Svi računi', no_invoices: 'Još nema računa.',
   b_conflict: 'Pažnja: broj računa {n} je dodeljen dva puta (dva uređaja istovremeno offline). Storniraj jedan od računa i napravi ga ponovo.',
   b_token: 'GitHub pristupni ključ je istekao ili nije važeći. Podaci se čuvaju samo lokalno. Obnovi ključ.',
   b_sync_err: 'Poslednja sinhronizacija nije uspela. Podaci su sačuvani lokalno i biće poslati kasnije.',

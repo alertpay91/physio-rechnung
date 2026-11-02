@@ -127,6 +127,9 @@ tr.sum td { font-weight: 650; border-bottom: 0; }
 .tag.draft { background: var(--soft); color: var(--accent); }
 .tag.final, .tag.sent { background: var(--warn-bg); color: var(--warn); }
 .tag.paid { background: var(--ok-bg); color: var(--ok); }
+/* plaćeni računi u listi: blago zelen red */
+tr.st-paid td, .li.st-paid { background: var(--ok-bg); }
+tr.st-cancelled td, tr.st-storno td, .li.st-cancelled, .li.st-storno { opacity: .65; }
 .tag.cancelled, .tag.storno, .tag.overdue { background: var(--danger-bg); color: var(--danger); }
 
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0 6px; }
