@@ -57,6 +57,7 @@ function picksTab(el) {
 
 function praxis(el) {
   const pr = clone(V.db().praxis);
+  pr.introText = M.introTemplate(pr.introText);
   const orig = stableStringify(pr);
   setGuard(() => stableStringify(pr) !== orig);
   const f = (k, label, extra = '', type = 'text') => `<label class="field ${extra}"><span>${label}</span><input type="${type}" data-k="${k}" value="${esc(pr[k] ?? '')}"></label>`;
@@ -109,7 +110,8 @@ function praxis(el) {
     for (const k of Object.keys(pr)) if (typeof pr[k] === 'string' && !['introText', 'introNoPresc', 'taxNote', 'closing'].includes(k)) pr[k] = norm(pr[k]);
     if (pr.iban) pr.iban = ibanFormat(pr.iban);
     if (pr.iban && !ibanValid(pr.iban) && !(await confirmBox(t('iban_bad_save')))) return;
-    if (!pr.introText.includes('{verordnung}') && !(await confirmBox(t('intro_no_placeholder')))) return;
+    pr.introText = M.introTemplate(pr.introText);
+    if (!pr.introText.includes('{verordnung}') &&!(await confirmBox(t('intro_no_placeholder')))) return;
     pr.paymentDays = Math.max(0, Math.round(Number(pr.paymentDays) || 14));
     pr.reminderDays = Math.max(1, Math.round(Number(pr.reminderDays) || 10));
     pr.updatedAt = nowStamp();

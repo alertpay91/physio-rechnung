@@ -312,11 +312,19 @@ export function validate(db, inv, today = todayISO()) {
 
 /* ===================== Snimak (ono što ide na papir, zamrznuto) ===================== */
 
+// Ako je u uvod upisan fiksni datum umesto {verordnung}, vrati oznaku,
+// da datum Verordnung-a uvek dolazi sa samog računa.
+export function introTemplate(text) {
+  const s = text || '';
+  if (s.includes('{verordnung}')) return s;
+  return s.replace(/\b\d{1,2}\.\s?\d{1,2}\.\s?\d{2,4}\b/, '{verordnung}');
+}
+
 export function introFor(praxis, inv) {
   if (inv.kind === 'storno') return inv.intro || '';
   if (inv.intro) return inv.intro;
   return inv.prescriptionDate
-    ? praxis.introText.replace('{verordnung}', dmy(inv.prescriptionDate))
+    ? introTemplate(praxis.introText).replace('{verordnung}', dmy(inv.prescriptionDate))
     : praxis.introNoPresc;
 }
 

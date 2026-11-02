@@ -258,3 +258,12 @@ test('validate: upozorenje kad broj ne odgovara mesecu', () => {
   d.number = '1026/02';
   assert.ok(M.validate(db, d, '2026-11-03').warnings.some((w) => w.k === 'v_number_month'));
 });
+
+test('introTemplate: fixed date typed into intro becomes {verordnung} again', () => {
+  const fixed = 'Für die im Rahmen der ärztlichen Verordnung vom 08.06.2026 erbrachten Leistungen:';
+  assert.equal(M.introTemplate(fixed), 'Für die im Rahmen der ärztlichen Verordnung vom {verordnung} erbrachten Leistungen:');
+  assert.equal(M.introTemplate('vom {verordnung} am 1.1.2020'), 'vom {verordnung} am 1.1.2020');
+  assert.equal(M.introTemplate('ohne Datum'), 'ohne Datum');
+  const out = M.introFor({ introText: fixed, introNoPresc: 'x' }, { kind: 'invoice', prescriptionDate: '2026-10-15' });
+  assert.match(out, /Verordnung vom 15\.10\.2026 erbrachten/);
+});
